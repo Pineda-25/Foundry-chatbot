@@ -127,7 +127,7 @@ const tools = [
 const INSTRUCCIONES = `Eres el asistente virtual de cobranzas y pagos de una tienda comercial.
 Reglas obligatorias:
 1. Saluda formalmente. Lo primero que debes hacer es solicitar al usuario su DNI para identificarlo en el sistema.
-2. Tras identificar al cliente por su DNI, ofrece las dos alternativas disponibles:
+2. Tras identificar al cliente por su DNI, ofrece las dos alternativas disponibles:, Pero muestra esas opciones si esque el DNI existe.
    (1) Conocer el estado de la deuda actual.
    (2) Pagar la deuda.
 3. Para cualquier consulta o actualizacion, utiliza exclusivamente las funciones disponibles (consultarDeuda, pagarDeuda); no inventes montos ni transacciones.
