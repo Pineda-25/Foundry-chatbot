@@ -1,6 +1,6 @@
 # Foundry Chatbot & Azure AI Suite
 
-Solución modular de inteligencia artificial desarrollada con **Node.js**, integrando **Azure OpenAI Service** y **Azure Document Intelligence**. Incluye asistentes conversacionales basados en *Function Calling*, análisis multimodal de imágenes (facturas), extracción OCR de documentos y una interfaz web interactiva.
+Solución modular de inteligencia artificial desarrollada con **Node.js**, integrando **Azure OpenAI Service** y **Azure Document Intelligence**. Incluye asistentes conversacionales basados en *Function Calling*, análisis multimodal de imágenes (facturas), extracción OCR de documentos, procesamiento de lenguaje natural (PLN) para extracción de entidades y clasificación de sentimientos, y una interfaz web interactiva.
 
 ---
 
@@ -19,15 +19,23 @@ Solución modular de inteligencia artificial desarrollada con **Node.js**, integ
 * **Restricción de Dominio (Guardrails):** Configurado con instrucciones estrictas para responder únicamente sobre historia, política, deportes, cine y cultura nacional del Perú, rechazando con cortesía cualquier consulta externa.
 * **Optimización de Tokens:** Respuestas concisas con control de salida (`max_output_tokens: 300`) y bajo esfuerzo de razonamiento.
 
-### 3. Asistente de Biblioteca con Herramientas Locales (`chat-biblioteca.js`)
+### 3. Extractor de Entidades e Incidentes (`chatgtp-6.js`)
+* **Procesamiento de Lenguaje Natural (PLN):** Transforma texto desestructurado (mensajes de reclamo, correos o compras) en un objeto JSON limpio y estructurado.
+* **Entidades extraídas:** Datos del cliente (nombre, DNI, teléfono, email), producto/servicio (monto, moneda, fecha) y clasificación automática del incidente (categoría, urgencia, resumen y solicitud del cliente).
+
+### 4. Clasificador Interactivo de Sentimientos y Cartas (`chat-clasificacion.js`)
+* **Análisis Afectivo y de Tono:** Evalúa cartas, reseñas o mensajes largos en tiempo real desde la consola.
+* **Detección estructurada:** Clasifica sentimiento general (Positivo/Negativo/Neutro/Mixto), lista de emociones específicas, tono, intensidad del 1 al 10, intención principal, motivo clave y recomendación de acción.
+
+### 5. Asistente de Biblioteca con Herramientas Locales (`chat-biblioteca.js`)
 * Chatbot interactivo para búsqueda en catálogo, consulta de disponibilidad de copias en tiempo real y registro de préstamos de libros.
 * Búsqueda resiliente con normalización de caracteres Unicode (remueve tildes y diacríticos).
 
-### 4. Análisis Multimodal de Facturas (`chatgt-analisis.js`)
+### 6. Análisis Multimodal de Facturas (`chatgt-analisis.js`)
 * Procesamiento de imágenes PNG/JPG convertidas a Base64.
 * Extracción automatizada de datos clave de facturación (datos del cliente, número de comprobante, conceptos y monto total a pagar).
 
-### 5. Extracción OCR de Documentos PDF (`ocr.js` y `server.js`)
+### 7. Extracción OCR de Documentos PDF (`ocr.js` y `server.js`)
 * API REST montada sobre **Express 5** y **Multer**.
 * Extracción y segmentación de texto a partir de archivos PDF mediante Azure Document Intelligence.
 * Interfaz web para carga y visualización de resultados (`public/index.html`).
@@ -40,22 +48,24 @@ Solución modular de inteligencia artificial desarrollada con **Node.js**, integ
 foundry/
 ├── public/
 │   ├── css/
-│   │   └── chat.css          # Estilos minimalistas y modulares del chat web
+│   │   └── chat.css              # Estilos minimalistas y modulares del chat web
 │   ├── js/
-│   │   └── app.js           # Lógica frontend para carga de PDFs (OCR)
-│   ├── index-chat.html       # Interfaz web del chat de Historia del Perú
-│   └── index.html            # Interfaz web para el lector OCR
-├── .env.example              # Plantilla de variables de entorno (sin credenciales)
-├── .gitignore                # Exclusión de node_modules y credenciales .env
-├── chat-biblioteca.js        # Chatbot con Function Calling para préstamos
-├── chat-interactivo.js       # Chatbot de cobranzas y pagos con validación de DNI
-├── chat-texto.js             # Chatbot de Historia del Perú por consola
-├── chatgt-analisis.js        # Análisis de facturas mediante visión por computadora
-├── chatgtp.js                # Cliente base con streaming de OpenAI Responses API
-├── factura.png               # Imagen de prueba para análisis multimodal
-├── ocr.js                    # Integración con Azure Document Intelligence
-├── package.json              # Metadatos del proyecto y dependencias
-└── server.js                 # Servidor Express y endpoints API
+│   │   └── app.js               # Lógica frontend para carga de PDFs (OCR)
+│   ├── index-chat.html           # Interfaz web del chat de Historia del Perú
+│   └── index.html                # Interfaz web para el lector OCR
+├── .env.example                  # Plantilla de variables de entorno (sin credenciales)
+├── .gitignore                    # Exclusión de node_modules y credenciales .env
+├── chat-biblioteca.js            # Chatbot con Function Calling para préstamos
+├── chat-clasificacion.js         # Clasificador interactivo de sentimientos y emociones
+├── chat-interactivo.js           # Chatbot de cobranzas y pagos con validación de DNI
+├── chat-texto.js                 # Chatbot de Historia del Perú por consola
+├── chatgt-analisis.js            # Análisis de facturas mediante visión por computadora
+├── chatgtp-6.js                  # Extractor de entidades empresariales en JSON
+├── chatgtp.js                    # Cliente base con streaming de OpenAI Responses API
+├── factura.png                   # Imagen de prueba para análisis multimodal
+├── ocr.js                        # Integración con Azure Document Intelligence
+├── package.json                  # Metadatos del proyecto y dependencias
+└── server.js                     # Servidor Express y endpoints API
 ```
 
 ---
@@ -64,7 +74,7 @@ foundry/
 
 * **Node.js** (versión 20.x o superior recomendada).
 * Cuenta de **Microsoft Azure** con recursos aprovisionados para:
-  * Azure OpenAI Service (con un despliegue de modelo, ej: `gpt-5.4-mini`).
+  * Azure OpenAI Service (con modelos desplegados, ej: `gpt-5.4-mini` y `gpt-6-luna`).
   * Azure Document Intelligence (Read API).
 
 ---
@@ -99,10 +109,15 @@ foundry/
    DI_API_VERSION=2024-11-30
    DI_MODEL=prebuilt-read
 
-   # Azure OpenAI
+   # Azure OpenAI Service (Principal)
    OPENAI_BASE_URL=https://tu-recurso.services.ai.azure.com/openai/v1
    OPENAI_API_KEY=tu_azure_openai_key
    OPENAI_MODEL=gpt-5.4-mini
+
+   # Azure OpenAI Service (Secundario / PLN)
+   OPENAI_BASE_URL2=https://tu-recurso.services.ai.azure.com/api/projects/tu-proyecto/openai/v1
+   OPENAI_API_KEY2=tu_azure_openai_key_secundaria
+   OPENAI_MODEL2=gpt-6-luna
    ```
 
 ---
@@ -122,6 +137,16 @@ npm run dev
 ### Chatbot de Cobranzas por Terminal
 ```bash
 node chat-interactivo.js
+```
+
+### Clasificador de Sentimientos y Cartas
+```bash
+node chat-clasificacion.js
+```
+
+### Extractor de Entidades (PLN)
+```bash
+node chatgtp-6.js
 ```
 
 ### Análisis de Factura (Visión / Multimodal)
